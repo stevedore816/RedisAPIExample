@@ -1,0 +1,10 @@
+redis:
+  host: redis_host_name
+  db: 0
+  user: default
+  password: redis_password
+  port: redis_port
+
+
+OpenWeatherMapAPI:
+  api_key: 0
