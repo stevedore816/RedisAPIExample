@@ -20,16 +20,21 @@ def createResponse():
     cityName = "Philadelphia"
     url = "http://api.openweathermap.org/data/2.5/forecast?" + "q=" + cityName + "&appid=" + str(apiKey)
 
+    data = None
     response = requests.get(url)
     print(response)
     if response.status_code == 200:
         data = response.json()
-        print(data)
     else:
         print("Error with query")
 
+    if data:
+        return json.dumps(data)
+    else: 
+        return "No Data Available"
+
 '''REDIS Registering Specific Stuff'''
-tempJson = {"Data": "Test"}
+
 redisClient = redis.Redis(
     host = data['redis']['host'], 
     port=data['redis']['port'],
@@ -39,8 +44,11 @@ redisClient = redis.Redis(
     ssl=False
 )
 
-jsonString = json.dumps(tempJson)
-redisClient.set('jsonData', jsonString)
-print("Finalized")
 
 redisClient.delete('jsonData')
+
+redisClient.set('WeatherData', createResponse())
+
+print(redisClient.get('WeatherData'))
+
+
