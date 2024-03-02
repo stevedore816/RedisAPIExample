@@ -1,6 +1,4 @@
-import requests
 import yaml
-import json
 from OpenWeatherAPI import OpenWeatherAPI
 from PlotHandler import PlotHandler
 from RedisCommunications import RedisCommunications

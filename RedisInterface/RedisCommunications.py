@@ -7,7 +7,7 @@ class RedisCommunications:
     Attributes:
         weatherAPI: Communicates and pulls data from Open Weather API
     """
-    def __init__(self,weatherAPI: OpenWeatherAPI,yamlData) -> None:
+    def __init__(self,weatherAPI: OpenWeatherAPI,yamlData:dict) -> None:
         """
         Initalize the RedisCommunications Class
 

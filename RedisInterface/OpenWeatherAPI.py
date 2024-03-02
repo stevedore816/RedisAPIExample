@@ -6,7 +6,7 @@ class OpenWeatherAPI:
     Attributes:
         apikey: key for querying data
     """
-    def __init__(self,yamlData) -> None:
+    def __init__(self,yamlData:dict) -> None:
         """
         Initalize the OpenWeatherAPI Class
 
