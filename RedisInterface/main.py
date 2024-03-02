@@ -5,7 +5,7 @@ import json
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 '''API CALL'''
-def createResponse(cityName:str):
+def createResponse(cityName:str) -> str:
     url = 'http://api.openweathermap.org/data/2.5/forecast?' + 'q=' + cityName + '&appid=' + str(apiKey)
 
     data = None
@@ -19,11 +19,11 @@ def createResponse(cityName:str):
     if data:
         return json.dumps(data)
     else: 
-        print('No Data Available')
+        return 'No Data Available'
 
 '''REDIS Registering Specific Stuff'''
 
-def setRedisData(cityNames = ['Chicago','Philadelphia']) :
+def setRedisData(cityNames : list[str]) -> None:
     
     for city in cityNames:
         redisClient.delete(f'WeatherData:{city}') #We only want one instance for this example
@@ -33,12 +33,12 @@ def setRedisData(cityNames = ['Chicago','Philadelphia']) :
 
         
 
-def getCityData(city:str):  
+def getCityData(city:str) -> dict:  
     weatherInfo = json.loads(redisClient.json().get(f'WeatherData:{city}'))
     
     return weatherInfo.get('city')
 
-def getTempatures(city:str):
+def getTempatures(city:str) -> tuple[int,int]:
     weatherInfo = json.loads(redisClient.json().get(f'WeatherData:{city}'))
     tempMin = weatherInfo.get('list')[0].get('main').get('temp_min')
     tempMax = weatherInfo.get('list')[0].get('main').get('temp_max')
@@ -48,53 +48,59 @@ def getTempatures(city:str):
 def KelvinToDegrees(kelvin : int) -> int:
     return int((kelvin - 273.15) * (9/5) + 32)
 
-def getElevation(city:str):
+def getElevation(city:str) -> int:
     weatherInfo = json.loads(redisClient.json().get(f'WeatherData:{city}'))
     print(weatherInfo.get('list')[2].get('main').get('sea_level'))
-    return weatherInfo.get('list')[2].get('main').get('sea_level')
+    return int(weatherInfo.get('list')[2].get('main').get('sea_level'))
 
-def plotTempatures(cityNames = ['Chicago','Philadelphia']) -> None:
-    xMarks = [1,3]
-    xNames = ['Lows','Highs']
-    plt.xticks(xMarks,xNames)
-    tempatureData = []
-    for city in cityNames:
-        tempatureData.append(getTempatures(city))
-    bar1 = plt.bar(.5,tempatureData[0][0], align='center', alpha=0.5,color='skyblue')
-    plt.bar_label(bar1)
+def plotTempatures(cityNames : list[str]) -> None:
+    if len(cityNames) > 2:
+        print("Only supports two cities for now...")
+    else:
+        xMarks = [1,3]
+        xNames = ['Lows','Highs']
+        plt.xticks(xMarks,xNames)
+        tempatureData = []
+        for city in cityNames:
+            tempatureData.append(getTempatures(city))
+        bar1 = plt.bar(.5,tempatureData[0][0], align='center', alpha=0.5,color='skyblue')
+        plt.bar_label(bar1)
 
-    bar2 = plt.bar(1.3,tempatureData[1][0], align='center', alpha=0.5,color='salmon')
-    plt.bar_label(bar2)
+        bar2 = plt.bar(1.3,tempatureData[1][0], align='center', alpha=0.5,color='salmon')
+        plt.bar_label(bar2)
 
-    bar1 = plt.bar(2.5,tempatureData[0][1], align='center', alpha=0.5,color='skyblue')
-    plt.bar_label(bar1)
+        bar1 = plt.bar(2.5,tempatureData[0][1], align='center', alpha=0.5,color='skyblue')
+        plt.bar_label(bar1)
 
-    bar2 = plt.bar(3.3,tempatureData[1][1], align='center', alpha=0.5,color='salmon')
-    plt.bar_label(bar2)
+        bar2 = plt.bar(3.3,tempatureData[1][1], align='center', alpha=0.5,color='salmon')
+        plt.bar_label(bar2)
 
-    plt.xlim([0,4])
-    plt.title('Tempatures for 2/27/2024')
-    plt.legend(['Chicago','Philadelphia'],loc='center right')
-    plt.show()
+        plt.xlim([0,4])
+        plt.title('Tempatures for 2/27/2024')
+        plt.legend(['Chicago','Philadelphia'],loc='center right')
+        plt.show()
 
-def plotElevations(cityNames = ['Chicago','Philadelphia']) -> None:
-    xMarks = [.5,2]
-    xNames = ['Chicago','Philadelphia']
-    plt.xticks(xMarks,xNames)
-    tempatureData = []
-    for city in cityNames:
-        tempatureData.append(getElevation(city))
-    bar1 = plt.bar(.5,tempatureData[0], align='center', alpha=0.5,color='skyblue')
-    plt.bar_label(bar1)
+def plotElevations(cityNames : list[str]) -> None:
+    if len(cityNames) > 2:
+        print("Only supports two cities for now...")
+    else:
+        xMarks = [.5,2]
+        xNames = ['Chicago','Philadelphia']
+        plt.xticks(xMarks,xNames)
+        tempatureData = []
+        for city in cityNames:
+            tempatureData.append(getElevation(city))
+        bar1 = plt.bar(.5,tempatureData[0], align='center', alpha=0.5,color='skyblue')
+        plt.bar_label(bar1)
 
-    bar2 = plt.bar(2,tempatureData[1], align='center', alpha=0.5,color='skyblue')
-    plt.bar_label(bar2)
+        bar2 = plt.bar(2,tempatureData[1], align='center', alpha=0.5,color='skyblue')
+        plt.bar_label(bar2)
 
-    plt.xlim([0,2.5])
-    plt.title('SeaLevel')
-    plt.show()
+        plt.xlim([0,2.5])
+        plt.title('SeaLevel')
+        plt.show()
 
-def plotGeoMap(cityNames = ['Chicago','Philadelphia']) -> None:
+def plotGeoMap(cityNames : list[str]) -> None:
     #Set Lat and Lon Coordinate List That We Are Going To Display on Our Map
     lat = []
     lon = []
@@ -112,6 +118,7 @@ def plotGeoMap(cityNames = ['Chicago','Philadelphia']) -> None:
     #set city labels
     for i in range(0,len(cityNames)):
         plt.text(lon[i],lat[i] +2,cityNames[i][0:5],color='blue') #Grabs first 5 Letters and Plots them Accordingly
+    plt.title("Cities")
     plt.show()
 
 if __name__ == '__main__':
@@ -120,7 +127,7 @@ if __name__ == '__main__':
         with open('../config.yaml', 'r') as config:
             data = yaml.safe_load(config)
     except:
-        print('Error pulling data from config.yaml Make sure your in the top directory and following the template appropriately')
+        print('Error pulling data from config.yaml, Make sure your config.yaml is in the top directory and you cd into RedisInterface Folder')
 
     apiKey = data['OpenWeatherMapAPI']['api_key']
     
@@ -144,6 +151,7 @@ if __name__ == '__main__':
     getElevation('Chicago')
 
     #Plot City Comparisons
-    plotTempatures()
-    plotElevations()
-    plotGeoMap(["Philadelphia","Los Angeles"])
+    citiesForComparisons = ['Chicago','Philadelphia']
+    plotTempatures(citiesForComparisons)
+    plotElevations(citiesForComparisons)
+    plotGeoMap(["Philadelphia","Los Angeles"]) #Just these 2 for now because overlap isn't pretty.
