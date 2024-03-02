@@ -1,8 +1,18 @@
 import json
 import requests
 class OpenWeatherAPI:
-
+    """
+    This class handles communicating with OpenWeatherAPI to Pull data
+    Attributes:
+        apikey: key for querying data
+    """
     def __init__(self,yamlData) -> None:
+        """
+        Initalize the OpenWeatherAPI Class
+
+        Args:
+            yamlData: Data from the yaml file to instantiate Redis Client
+        """
         self.apiKey = yamlData['OpenWeatherMapAPI']['api_key']
 
     def createResponse(self,cityName:str) -> str:

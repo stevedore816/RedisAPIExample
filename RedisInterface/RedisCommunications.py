@@ -2,7 +2,19 @@ import redis
 import OpenWeatherAPI
 import json
 class RedisCommunications:
+    """
+    This class handles communicating with REDIS to Insert and Pull data
+    Attributes:
+        weatherAPI: Communicates and pulls data from Open Weather API
+    """
     def __init__(self,weatherAPI: OpenWeatherAPI,yamlData) -> None:
+        """
+        Initalize the RedisCommunications Class
+
+        Args:
+            weatherAPI: Weather API Communicator to Query to and from
+            yamlData: Data from the yaml file to instantiate Redis Client
+        """
         self.weatherAPI= weatherAPI
         #Instantiating Redis Client
         self.redisClient = redis.Redis(
@@ -33,7 +45,7 @@ class RedisCommunications:
 
     def getCityData(self,cityName:str) -> dict:  
         """    
-            Searches in REDIS for a city that we then traverse to get information about the city itself. 
+        Searches in REDIS for a city that we then traverse to get information about the city itself. 
 
         Args:
             cityName: Name of the City we want to query. 
@@ -47,7 +59,7 @@ class RedisCommunications:
 
     def getTempatures(self,cityName:str) -> tuple[int,int]:
         """    
-            Searches in REDIS for a city that we then traverse to get information about the tempatures.
+        Searches in REDIS for a city that we then traverse to get information about the tempatures.
 
         Args:
             cityName: Name of the City we want to query. 
@@ -66,10 +78,10 @@ class RedisCommunications:
         Converts from Kelvin to Degrees
 
         Args:
-        kelvin: the tempature to be converted to degrees
+            kelvin: the tempature to be converted to degrees
 
         Returns:
-        The conversion of kelvin tempature in Degrees
+            The conversion of kelvin tempature in Degrees
         """
         return int((kelvin - 273.15) * (9/5) + 32)
 
@@ -78,10 +90,10 @@ class RedisCommunications:
         Searches in REDIS for a city that we then traverse to get information about the sealevel.
 
         Args:
-        cityName: Name of the City we want to query. 
+            cityName: Name of the City we want to query. 
 
         Returns:
-        An int indicating how high above sealevel the respective city is 
+            An int indicating how high above sealevel the respective city is 
         """
         weatherInfo = json.loads(self.redisClient.json().get(f'WeatherData:{cityName}'))
         print(weatherInfo.get('list')[2].get('main').get('sea_level'))

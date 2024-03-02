@@ -2,7 +2,18 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import RedisCommunications
 class PlotHandler():
+    """
+    This class handles creating all the graphs and displaying them
+    Attributes:
+        redisClient: Communicates and pulls data from Redis
+    """
     def __init__(self,RedisClient:RedisCommunications) -> None:
+        """
+        Initalize the PlotHandlerClass
+
+        Args:
+            RedisClient: The Redis Client that will be pulling data from REDIS
+        """
         self.redisClient=RedisClient
     def plotTempatures(self,cityNames : list[str]) -> None:
         """    
@@ -96,5 +107,5 @@ class PlotHandler():
         #set city labels
         for i in range(0,len(cityNames)):
             plt.text(lon[i],lat[i] +2,cityNames[i][0:5],color='blue') #Grabs first 5 Letters and Plots them Accordingly
-            plt.title("Cities")
-            plt.show()
+        plt.title("Cities")
+        plt.show()
