@@ -3,10 +3,10 @@ import yaml
 import redis
 import json
 import matplotlib.pyplot as plt
-
+from mpl_toolkits.basemap import Basemap
 '''API CALL'''
 def createResponse(cityName:str):
-    url = "http://api.openweathermap.org/data/2.5/forecast?" + "q=" + cityName + "&appid=" + str(apiKey)
+    url = 'http://api.openweathermap.org/data/2.5/forecast?' + 'q=' + cityName + '&appid=' + str(apiKey)
 
     data = None
     response = requests.get(url)
@@ -14,16 +14,16 @@ def createResponse(cityName:str):
     if response.status_code == 200:
         data = response.json()
     else:
-        print("Error with query")
+        print('Error with query')
 
     if data:
         return json.dumps(data)
     else: 
-        return "No Data Available"
+        print('No Data Available')
 
 '''REDIS Registering Specific Stuff'''
 
-def setRedisData(cityNames = ["Chicago","Philadelphia"]) :
+def setRedisData(cityNames = ['Chicago','Philadelphia']) :
     
     for city in cityNames:
         redisClient.delete(f'WeatherData:{city}') #We only want one instance for this example
@@ -36,13 +36,13 @@ def setRedisData(cityNames = ["Chicago","Philadelphia"]) :
 def getCityData(city:str):  
     weatherInfo = json.loads(redisClient.json().get(f'WeatherData:{city}'))
     
-    print(weatherInfo.get('city'))
+    return weatherInfo.get('city')
 
 def getTempatures(city:str):
     weatherInfo = json.loads(redisClient.json().get(f'WeatherData:{city}'))
     tempMin = weatherInfo.get('list')[0].get('main').get('temp_min')
     tempMax = weatherInfo.get('list')[0].get('main').get('temp_max')
-    print("Temps: Min: ", KelvinToDegrees(tempMin),", Max: ", KelvinToDegrees(tempMax))
+    print('Temps: Min: ', KelvinToDegrees(tempMin),', Max: ', KelvinToDegrees(tempMax))
     return [KelvinToDegrees(tempMin),KelvinToDegrees(tempMax)]
 
 def KelvinToDegrees(kelvin : int) -> int:
@@ -53,9 +53,9 @@ def getElevation(city:str):
     print(weatherInfo.get('list')[2].get('main').get('sea_level'))
     return weatherInfo.get('list')[2].get('main').get('sea_level')
 
-def plotTempatures(cityNames = ["Chicago","Philadelphia"]) -> None:
+def plotTempatures(cityNames = ['Chicago','Philadelphia']) -> None:
     xMarks = [1,3]
-    xNames = ["Lows","Highs"]
+    xNames = ['Lows','Highs']
     plt.xticks(xMarks,xNames)
     tempatureData = []
     for city in cityNames:
@@ -73,13 +73,13 @@ def plotTempatures(cityNames = ["Chicago","Philadelphia"]) -> None:
     plt.bar_label(bar2)
 
     plt.xlim([0,4])
-    plt.title("Tempatures for 2/27/2024")
-    plt.legend(["Chicago","Philadelphia"],loc='center right')
+    plt.title('Tempatures for 2/27/2024')
+    plt.legend(['Chicago','Philadelphia'],loc='center right')
     plt.show()
 
-def plotElevations(cityNames = ["Chicago","Philadelphia"]) -> None:
+def plotElevations(cityNames = ['Chicago','Philadelphia']) -> None:
     xMarks = [.5,2]
-    xNames = ["Chicago","Philadelphia"]
+    xNames = ['Chicago','Philadelphia']
     plt.xticks(xMarks,xNames)
     tempatureData = []
     for city in cityNames:
@@ -91,7 +91,27 @@ def plotElevations(cityNames = ["Chicago","Philadelphia"]) -> None:
     plt.bar_label(bar2)
 
     plt.xlim([0,2.5])
-    plt.title("SeaLevel")
+    plt.title('SeaLevel')
+    plt.show()
+
+def plotGeoMap(cityNames = ['Chicago','Philadelphia']) -> None:
+    #Set Lat and Lon Coordinate List That We Are Going To Display on Our Map
+    lat = []
+    lon = []
+
+    for city in cityNames:
+        cityData=getCityData(city)
+        lat.append(int(cityData.get('coord').get('lat')))
+        lon.append(int(cityData.get('coord').get('lon')))
+
+    #set map and plot points
+    map = Basemap()
+    map.drawcoastlines()
+    map.drawcountries()
+    map.plot(lon,lat,'co',markersize=8) #make points cyan co
+    #set city labels
+    for i in range(0,len(cityNames)):
+        plt.text(lon[i],lat[i] +2,cityNames[i][0:5],color='blue') #Grabs first 5 Letters and Plots them Accordingly
     plt.show()
 
 if __name__ == '__main__':
@@ -100,7 +120,7 @@ if __name__ == '__main__':
         with open('../config.yaml', 'r') as config:
             data = yaml.safe_load(config)
     except:
-        print("Error pulling data from config.yaml Make sure your in the top directory and following the template appropriately")
+        print('Error pulling data from config.yaml Make sure your in the top directory and following the template appropriately')
 
     apiKey = data['OpenWeatherMapAPI']['api_key']
     
@@ -114,15 +134,16 @@ if __name__ == '__main__':
     )
     
     #Extract JSON from Weather API & Send it to Redis DB
-    setRedisData()
+    setRedisData(["Philadelphia","Chicago","Los Angeles"])
     #GET Functions for Data From REDIS
-    getCityData("Philadelphia")
-    getCityData("Chicago")
-    getTempatures("Philadelphia")
-    getTempatures("Chicago")
-    getElevation("Philadelphia")
-    getElevation("Chicago")
+    getCityData('Philadelphia')
+    getCityData('Chicago')
+    getTempatures('Philadelphia')
+    getTempatures('Chicago')
+    getElevation('Philadelphia')
+    getElevation('Chicago')
 
     #Plot City Comparisons
-    #plotTempatures()
-    #plotElevations()
+    plotTempatures()
+    plotElevations()
+    plotGeoMap(["Philadelphia","Los Angeles"])
